@@ -1,0 +1,26 @@
+{
+  "name": "wiki-bot",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "discourse2": "^1.1.2",
+    "totp-generator": "^1.0.0",
+    "vrchat": "^1.18.1",
+    "wretch": "^2.9.0"
+  },
+  "devDependencies": {
+    "@ariesclark/eslint-config": "^2.0.1",
+    "@types/bun": "^1.1.6",
+    "eslint": "^9.8.0",
+    "typescript": "^5.5.4"
+  }
+}
