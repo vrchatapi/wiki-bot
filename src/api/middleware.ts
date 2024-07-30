@@ -26,7 +26,7 @@ interface Cookies {
 	size(url: string): Promise<number>;
 }
 
-const cookies: Cookies = {
+export const cookies: Cookies = {
 	all: async (url?: string) => {
 		const cookies = await Bun.file("cookies.json")
 			.json()

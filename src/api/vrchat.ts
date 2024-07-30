@@ -4,7 +4,7 @@ import { TOTP } from "totp-generator";
 
 import { vrchatEmail, vrchatPassword, vrchatTotpSecret } from "~/environment";
 
-import { cookie, log } from "./middleware";
+import { cookie, cookies, log, serializeCookies } from "./middleware";
 
 import type { InfoPush, CurrentUser, Verify2FAResult } from "vrchat";
 
@@ -63,7 +63,8 @@ const api = baseApi.middlewares([
 					throw new Error("Failed to re-authenticate.");
 				}
 
-				const allCookies = await cookies.all();
+				const { origin } = new URL(url);
+				const allCookies = await cookies.all(origin);
 
 				return next(url, {
 					...options,
