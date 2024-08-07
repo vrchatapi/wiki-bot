@@ -3,7 +3,9 @@ import wretch from "wretch";
 import QueryStringAddon from "wretch/addons/queryString";
 import FormDataAddon from "wretch/addons/formData";
 
-import { cookie, log } from "./middleware";
+import { dry, mediawikiPassword, mediawikiUsername } from "~/environment";
+
+import { cookie, cookies, log, serializeCookies } from "./middleware";
 
 const base = wretch("https://wiki.vrchat.com")
 	.addon(QueryStringAddon)
@@ -13,7 +15,41 @@ const base = wretch("https://wiki.vrchat.com")
 		assert: "bot"
 	});
 
-const api = base.url("/api.php");
+const api = base.url("/api.php").middlewares([
+	(next) => async (url, options) => {
+		const response = await next(url, options);
+		const error = response.headers.get("mediawiki-api-error");
+
+		if (error === "assertbotfailed" && options["credentials"] !== "none") {
+			console.log(
+				chalk.yellow(
+					`mediawiki => ${chalk.dim("Bot assertion failed, re-authenticating...")}`
+				)
+			);
+
+			if (!(await login()))
+				throw new Error(
+					`mediawiki => ${chalk.dim("Failed to re-authenticate.")}`
+				);
+
+			const { origin } = new URL(url);
+			const allCookies = await cookies.all(origin);
+
+			return next(url, {
+				...options,
+				headers: {
+					...options["headers"],
+					cookie:
+						Object.keys(allCookies).length > 0
+							? serializeCookies(allCookies)
+							: undefined
+				}
+			});
+		}
+
+		return response;
+	}
+]);
 
 interface Failure {
 	error: { code: string; info: string };
@@ -23,32 +59,69 @@ type MaybeFailure<T> =
 	| (T & { error: undefined })
 	| ({ [K in keyof T]: undefined } & Failure);
 
-export async function getCsrfToken() {
+export async function getToken(type: string) {
 	const { query, error } = await api
-		.query({
-			action: "query",
-			format: "json",
-			meta: "tokens",
-			type: "csrf"
-		})
+		.options({ credentials: "none" })
+		.query(
+			{
+				action: "query",
+				format: "json",
+				meta: "tokens",
+				type
+			},
+			true
+		)
 		.get()
 		.json<
 			MaybeFailure<{
 				query: {
-					tokens: {
-						csrftoken: string;
-					};
+					tokens: Record<`${string}token`, string>;
 				};
 			}>
 		>();
 
-	const token = query?.tokens?.csrftoken;
+	const token = query?.tokens[`${type}token`];
 	if (!token || error)
 		throw new Error(
-			`wiki.getCsrfToken() => ${chalk.dim(error?.info || "Unknown error.")}`
+			`mediawiki.getToken(${type}) => ${chalk.dim(error?.info || "Unknown error.")}`
 		);
 
 	return token;
+}
+
+export async function login(): Promise<boolean> {
+	const token = await getToken("login");
+
+	const { login, error } = await api
+		.options({ credentials: "none" })
+		.formData({
+			action: "login",
+			format: "json",
+			lgname: mediawikiUsername,
+			lgpassword: mediawikiPassword,
+			lgtoken: token
+		})
+		.query({}, true)
+		.post()
+		.json<
+			MaybeFailure<{
+				login: {
+					result: string;
+					reason: string;
+				};
+			}>
+		>();
+
+	if (login?.result !== "Success" || error) {
+		console.error(
+			chalk.red(
+				`mediawiki.login() => ${chalk.dim(error?.info || login?.reason || "Unknown error.")}`
+			)
+		);
+		return false;
+	}
+
+	return true;
 }
 
 export async function getContent(pathname: string) {
@@ -57,14 +130,36 @@ export async function getContent(pathname: string) {
 
 export interface SaveContentOptions {
 	summary?: string;
+	/**
+	 * The previous content of the page, used to skip saving if the content hasn't changed.
+	 */
+	previous?: string;
 }
 
 export async function saveContent(
 	pathname: string,
 	content: string,
-	{ summary = "Automated edit." }: SaveContentOptions = {}
+	{ summary = "Automated edit.", previous }: SaveContentOptions = {}
 ) {
-	const token = await getCsrfToken();
+	if (dry) {
+		console.log(
+			`${chalk.yellow(
+				`mediawiki.saveContent(${pathname}, ...) => ${chalk.dim("Dry-run mode, skipping.")}`
+			)}\n${chalk.dim(content)}`
+		);
+		return;
+	}
+
+	if (previous && previous.trim() === content.trim()) {
+		console.log(
+			`${chalk.yellow(
+				`mediawiki.saveContent(${pathname}, ...) => ${chalk.dim("Content hasn't changed, skipping.")}`
+			)}`
+		);
+		return;
+	}
+
+	const token = await getToken("csrf");
 
 	const { error } = await api
 		.formData({
@@ -81,7 +176,7 @@ export async function saveContent(
 
 	if (error)
 		throw new Error(
-			`wiki.saveContent(${pathname}, ...) => ${chalk.dim(error?.info || "Unknown error.")}`
+			`mediawiki.saveContent(${pathname}, ...) => ${chalk.dim(error?.info || "Unknown error.")}`
 		);
 }
 
@@ -89,8 +184,12 @@ export async function getTemplateContent(template: string) {
 	return getContent(`Template:${template}`);
 }
 
-export async function saveTemplateContent(template: string, content: string) {
-	return saveContent(`Template:${template}`, content);
+export async function saveTemplateContent(
+	template: string,
+	content: string,
+	options?: SaveContentOptions
+) {
+	return saveContent(`Template:${template}`, content, options);
 }
 
 export function join(...parts: Array<string>) {
@@ -105,4 +204,21 @@ ${content.trim()}
 
 export function trimOnlyInclude(document: string) {
 	return document.replace(/<onlyinclude>.+<\/onlyinclude>/gis, "").trim();
+}
+
+type TemplateValue = string | number;
+
+export function template(
+	name: string,
+	parameters: Record<string, TemplateValue | undefined> | Array<TemplateValue>
+) {
+	return `{{${name}${
+		Array.isArray(parameters)
+			? parameters.map((value) => `\n|${value}`).join("")
+			: Object.entries(parameters)
+					.filter(([, value]) => value !== undefined)
+					.map(([key, value]) => `\n|${key}=${value}`)
+					.join("")
+	}
+}}`;
 }

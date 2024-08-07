@@ -1,10 +1,10 @@
 import wretch from "wretch";
 
-import { log } from "./middleware";
+import { cookie, log } from "./middleware";
 
 import type { operations } from "discourse2/lib/schema";
 
-const base = wretch("https://ask.vrchat.com").middlewares([log]);
+const base = wretch("https://ask.vrchat.com").middlewares([log, cookie]);
 
 export async function getUpdates() {
 	const {

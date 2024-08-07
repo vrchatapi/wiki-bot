@@ -5,14 +5,21 @@ import type { ConfiguredMiddleware, WretchOptions } from "wretch";
 export const log: ConfiguredMiddleware = (next) => {
 	return async (url, options) => {
 		const { origin } = new URL(url);
-		console.log(options["method"], url.replace(origin, chalk.dim(origin)));
+		console.log(
+			options["method"],
+			url.replace(origin, chalk.dim(origin)),
+			options
+		);
 		const response = await next(url, options);
+
+		const clone = response.clone();
 
 		console.log(
 			options["method"],
-			response.url.replace(origin, chalk.dim(origin)),
-			response.status,
-			response.statusText
+			clone.url.replace(origin, chalk.dim(origin)),
+			clone.status,
+			clone.statusText,
+			chalk.dim(`\n${await clone.text()}`)
 		);
 		return response;
 	};

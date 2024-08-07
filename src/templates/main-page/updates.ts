@@ -31,20 +31,20 @@ export async function refresh() {
 			template.replace(
 				"{entries}",
 				entries
-					.map(
-						({ title, url, at }) =>
-							`* <span style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden; width: 100%; display: block;">${at.toLocaleDateString(
-								"en-US",
-								{
-									day: "2-digit",
-									month: "short"
-								}
-							)} - [${url} ${title.trim()}]</span>`
+					.map(({ id, title, url, at }) =>
+						wiki.template("MainPageUpdates/Item", {
+							date: `@${Math.floor(at.getTime() / 1000)}`,
+							id,
+							title,
+							url
+						})
 					)
 					.join("\n")
 			)
 		)
 	);
 
-	await wiki.saveTemplateContent("MainPageUpdates", document);
+	await wiki.saveTemplateContent("MainPageUpdates", document, {
+		previous: documentOriginal
+	});
 }
