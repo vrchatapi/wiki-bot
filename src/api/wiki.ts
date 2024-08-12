@@ -3,7 +3,12 @@ import wretch from "wretch";
 import QueryStringAddon from "wretch/addons/queryString";
 import FormDataAddon from "wretch/addons/formData";
 
-import { dry, mediawikiPassword, mediawikiUsername } from "~/environment";
+import {
+	dry,
+	mediawikiPassword,
+	mediawikiUsername,
+	verbose
+} from "~/environment";
 
 import { cookie, cookies, log, serializeCookies } from "./middleware";
 
@@ -145,7 +150,7 @@ export async function saveContent(
 		console.log(
 			`${chalk.yellow(
 				`mediawiki.saveContent(${pathname}, ...) => ${chalk.dim("Dry-run mode, skipping.")}`
-			)}\n${chalk.dim(content)}`
+			)}${verbose ? `\n${chalk.dim(content)}` : ""}`
 		);
 		return;
 	}

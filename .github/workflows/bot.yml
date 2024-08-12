@@ -1,0 +1,65 @@
+name: Bot
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: "0 * * * *"
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        bun: ["1.1.22"]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ matrix.bun }}
+      - run: bun install
+      - name: Restore cookies
+        id: restore-cookies
+        uses: icyleaf/cloudflare-workers-kv-action@v0.1.0
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_KV_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT }}
+        with:
+          namespace_id: ${{ secrets.CLOUDFLARE_KV_NAMESPACE }}
+          key: cookies
+      - name: Run script
+        id: action
+        timeout-minutes: 2
+        run: |
+          echo "${{ steps.restore-cookies.outputs.value }}" \
+          | openssl enc -d -des3 -base64 -pass pass:${{ secrets.ENCRYPTION_KEY }} -pbkdf2 -out cookies.json
+
+          export COOKIES=$(cat cookies.json)
+          echo "::add-mask::$COOKIES"
+          echo "::set-output name=original-cookies::$COOKIES"
+
+          bun src/index.ts \
+            --vrchat-email="${{ secrets.VRCHAT_EMAIL }}" \
+            --vrchat-password="${{ secrets.VRCHAT_PASSWORD }}" \
+            --vrchat-totp-secret="${{ secrets.VRCHAT_TOTP_SECRET }}" \
+            --mediawiki-username="${{ secrets.MEDIAWIKI_USERNAME }}" \
+            --mediawiki-password="${{ secrets.MEDIAWIKI_PASSWORD }}" \
+
+          export COOKIES=$(cat cookies.json)
+          echo "::add-mask::$COOKIES"
+          echo "::set-output name=updated-cookies::$COOKIES"
+
+          export ENCRYPTED_COOKIES=$(echo $COOKIES | openssl enc -e -des3 -base64 -pass pass:${{ secrets.ENCRYPTION_KEY }} -pbkdf2 -A)
+          echo "::set-output name=encrypted-cookies::$ENCRYPTED_COOKIES"
+      - name: Save cookies
+        if: steps.action.outputs.updated-cookies != steps.action.outputs.original-cookies
+        uses: icyleaf/cloudflare-workers-kv-action@v0.1.0
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_KV_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT }}
+        with:
+          namespace_id: ${{ secrets.CLOUDFLARE_KV_NAMESPACE }}
+          key: cookies
+          value: ${{ steps.action.outputs.encrypted-cookies }}
+          overwrite: true
+    

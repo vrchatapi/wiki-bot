@@ -28,8 +28,6 @@ export async function refresh() {
 					: undefined
 		}));
 
-	console.log(data);
-
 	const template = wiki.trimOnlyInclude(documentOriginal);
 	const document = wiki.join(
 		template,

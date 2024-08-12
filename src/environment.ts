@@ -1,13 +1,46 @@
-export const vrchatEmail = process.env["VRCHAT_EMAIL"]!;
-export const vrchatPassword = process.env["VRCHAT_PASSWORD"]!;
-export const vrchatTotpSecret = process.env["VRCHAT_TOTP_SECRET"]!;
+import { parseArgs } from "util";
 
-export const mediawikiUsername = process.env["MEDIAWIKI_USERNAME"]!;
-export const mediawikiPassword = process.env["MEDIAWIKI_PASSWORD"]!;
+const env = (name: string) => {
+	if (process.env[name]) return process.env[name];
+	throw new ReferenceError(`Missing argument: ${name}.`);
+};
 
-const argv = process.argv.slice(2);
-
-/**
- * Whether to run the script in dry-run mode, which prevents any changes from being made.
- */
-export const dry = !!process.env["DRY"] || argv.includes("--dry");
+export const {
+	values: {
+		dry = false,
+		verbose = false,
+		"vrchat-email": vrchatEmail = env("VRCHAT_EMAIL"),
+		"vrchat-password": vrchatPassword = env("VRCHAT_PASSWORD"),
+		"vrchat-totp-secret": vrchatTotpSecret = env("VRCHAT_TOTP_SECRET"),
+		"mediawiki-username": mediawikiUsername = env("MEDIAWIKI_USERNAME"),
+		"mediawiki-password": mediawikiPassword = env("MEDIAWIKI_PASSWORD")
+	}
+} = parseArgs({
+	args: Bun.argv.slice(2),
+	options: {
+		dry: {
+			short: "d",
+			type: "boolean"
+		},
+		"mediawiki-password": {
+			type: "string"
+		},
+		"mediawiki-username": {
+			type: "string"
+		},
+		verbose: {
+			short: "v",
+			type: "boolean"
+		},
+		"vrchat-email": {
+			type: "string"
+		},
+		"vrchat-password": {
+			type: "string"
+		},
+		"vrchat-totp-secret": {
+			type: "string"
+		}
+	},
+	strict: true
+});

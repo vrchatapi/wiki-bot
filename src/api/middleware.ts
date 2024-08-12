@@ -1,5 +1,7 @@
 import chalk from "chalk";
 
+import { verbose } from "~/environment";
+
 import type { ConfiguredMiddleware, WretchOptions } from "wretch";
 
 export const log: ConfiguredMiddleware = (next) => {
@@ -8,7 +10,7 @@ export const log: ConfiguredMiddleware = (next) => {
 		console.log(
 			options["method"],
 			url.replace(origin, chalk.dim(origin)),
-			options
+			verbose ? options : ""
 		);
 		const response = await next(url, options);
 
@@ -19,7 +21,7 @@ export const log: ConfiguredMiddleware = (next) => {
 			clone.url.replace(origin, chalk.dim(origin)),
 			clone.status,
 			clone.statusText,
-			chalk.dim(`\n${await clone.text()}`)
+			verbose ? chalk.dim(`\n${await clone.text()}`) : ""
 		);
 		return response;
 	};
@@ -42,7 +44,9 @@ export const cookies: Cookies = {
 		if (!url) return cookies ?? {};
 
 		const { origin } = new URL(url);
-		return cookies?.[origin] ?? {};
+		const value = cookies?.[origin] ?? {};
+
+		return value;
 	},
 	get: async (url: string, key: string) =>
 		cookies.all(url).then((cookies) => cookies[key]),
