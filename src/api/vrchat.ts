@@ -13,10 +13,11 @@ const baseUrl = "https://vrchat.com/api/1/";
 const baseApi = wretch()
 	.url(baseUrl)
 	.addon(QueryStringAddon)
-	.middlewares([log, cookie]);
+	.middlewares([cookie]);
 
 async function verify2FA() {
 	const { verified } = await baseApi
+		.middlewares([log])
 		.url("auth/twofactorauth/totp/verify")
 		.json({
 			code: TOTP.generate(vrchatTotpSecret).otp
@@ -33,6 +34,7 @@ async function verify2FA() {
 
 async function login(): Promise<boolean> {
 	const user = await baseApi
+		.middlewares([log])
 		.url("auth/user")
 		.auth(`Basic ${btoa(`${vrchatEmail}:${vrchatPassword}`)}`)
 		.get()
@@ -80,7 +82,8 @@ const api = baseApi.middlewares([
 
 			return response;
 		};
-	}
+	},
+	log
 ]);
 
 export interface InfopushOptions {
