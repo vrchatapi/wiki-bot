@@ -31,8 +31,8 @@ jobs:
         id: action
         timeout-minutes: 2
         run: |
-         echo "${{ steps.restore-cookies.outputs.value }}" \
-          | openssl enc -d -des3 -base64 -pass pass:${{ secrets.ENCRYPTION_KEY }} -pbkdf2 || echo '{}' \
+         (echo "${{ steps.restore-cookies.outputs.value }}" \
+          | openssl enc -d -des3 -base64 -pass pass:${{ secrets.ENCRYPTION_KEY }} -pbkdf2 || echo '{}') \
           > cookies.json
 
           export COOKIES=$(cat cookies.json)
