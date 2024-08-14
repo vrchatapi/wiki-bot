@@ -4,16 +4,29 @@ import { verbose } from "~/environment";
 
 import type { ConfiguredMiddleware, WretchOptions } from "wretch";
 
+function omit<T extends Record<string, unknown>, K extends keyof T>(
+	obj: T,
+	keys: Array<K>
+): Omit<T, K> {
+	const copy = { ...obj };
+	for (const key of keys) {
+		// eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+		delete copy[key];
+	}
+	return copy;
+}
+
 export const log: ConfiguredMiddleware = (next) => {
 	return async (url, options) => {
 		const { origin } = new URL(url);
+
 		console.log(
 			options["method"],
 			url.replace(origin, chalk.dim(origin)),
-			verbose ? options : ""
+			verbose ? omit(options, ["method"]) : ""
 		);
-		const response = await next(url, options);
 
+		const response = await next(url, options);
 		const clone = response.clone();
 
 		console.log(
@@ -23,6 +36,7 @@ export const log: ConfiguredMiddleware = (next) => {
 			clone.statusText,
 			verbose ? chalk.dim(`\n${await clone.text()}`) : ""
 		);
+
 		return response;
 	};
 };

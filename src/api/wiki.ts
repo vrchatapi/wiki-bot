@@ -7,7 +7,8 @@ import {
 	dry,
 	mediawikiPassword,
 	mediawikiUsername,
-	verbose
+	verbose,
+	force
 } from "~/environment";
 
 import { cookie, cookies, log, serializeCookies } from "./middleware";
@@ -66,7 +67,6 @@ type MaybeFailure<T> =
 
 export async function getToken(type: string) {
 	const { query, error } = await api
-		.options({ credentials: "none" })
 		.query(
 			{
 				action: "query",
@@ -74,7 +74,7 @@ export async function getToken(type: string) {
 				meta: "tokens",
 				type
 			},
-			true
+			type === "login"
 		)
 		.get()
 		.json<
@@ -91,6 +91,8 @@ export async function getToken(type: string) {
 			`mediawiki.getToken(${type}) => ${chalk.dim(error?.info || "Unknown error.")}`
 		);
 
+	if (verbose)
+		console.log(`mediawiki.getToken(${type}) => ${chalk.dim(token)}`);
 	return token;
 }
 
@@ -156,12 +158,20 @@ export async function saveContent(
 	}
 
 	if (previous && previous.trim() === content.trim()) {
+		if (!force) {
+			console.log(
+				`${chalk.yellow(
+					`mediawiki.saveContent(${pathname}, ...) => ${chalk.dim("Content hasn't changed, skipping.")}`
+				)}`
+			);
+			return;
+		}
+
 		console.log(
 			`${chalk.yellow(
-				`mediawiki.saveContent(${pathname}, ...) => ${chalk.dim("Content hasn't changed, skipping.")}`
+				`mediawiki.saveContent(${pathname}, ...) => ${chalk.dim("Content hasn't changed, but --force is enabled, saving anyway.")}`
 			)}`
 		);
-		return;
 	}
 
 	const token = await getToken("csrf");

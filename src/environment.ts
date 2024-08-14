@@ -9,6 +9,7 @@ export const {
 	values: {
 		dry = false,
 		verbose = false,
+		force = false,
 		"vrchat-email": vrchatEmail = env("VRCHAT_EMAIL"),
 		"vrchat-password": vrchatPassword = env("VRCHAT_PASSWORD"),
 		"vrchat-totp-secret": vrchatTotpSecret = env("VRCHAT_TOTP_SECRET"),
@@ -20,6 +21,10 @@ export const {
 	options: {
 		dry: {
 			short: "d",
+			type: "boolean"
+		},
+		force: {
+			short: "f",
 			type: "boolean"
 		},
 		"mediawiki-password": {
