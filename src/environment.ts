@@ -10,6 +10,7 @@ export const {
 		dry = false,
 		verbose = false,
 		force = false,
+		filter = "**",
 		"vrchat-email": vrchatEmail = env("VRCHAT_EMAIL"),
 		"vrchat-password": vrchatPassword = env("VRCHAT_PASSWORD"),
 		"vrchat-totp-secret": vrchatTotpSecret = env("VRCHAT_TOTP_SECRET"),
@@ -22,6 +23,9 @@ export const {
 		dry: {
 			short: "d",
 			type: "boolean"
+		},
+		filter: {
+			type: "string"
 		},
 		force: {
 			short: "f",
@@ -49,3 +53,5 @@ export const {
 	},
 	strict: true
 });
+
+export const filterGlob = new Bun.Glob(filter);
