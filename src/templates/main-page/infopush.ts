@@ -25,20 +25,18 @@ export async function refresh() {
 				data.onPressed.command as SupportedCommand
 			);
 		})
-		.map(({ id, data }) => {
-			const { command, parameters = [] } = data.onPressed!;
-
-			return {
-				id,
-				image: data.imageUrl,
-				url: {
-					OpenSafetyMenu: "https://wiki.vrchat.com/wiki/Trust_and_Safety",
-					OpenURL: parameters[0],
-					OpenVRCPlusMenu: "https://wiki.vrchat.com/wiki/VRChat+",
-					OpenWorldsMenu: `https://vrchat.com/home/worlds#${parameters[0]}`
-				}[command as SupportedCommand]
-			};
-		});
+		.map(({ id, data: { imageUrl, onPressed } }) => ({
+			id,
+			image: imageUrl,
+			url: onPressed
+				? {
+						OpenSafetyMenu: "https://wiki.vrchat.com/wiki/Trust_and_Safety",
+						OpenURL: onPressed!.parameters![0],
+						OpenVRCPlusMenu: "https://wiki.vrchat.com/wiki/VRChat+",
+						OpenWorldsMenu: `https://vrchat.com/home/worlds#${onPressed!.parameters![0]}`
+					}[onPressed.command as SupportedCommand]
+				: undefined
+		}));
 
 	const template = wiki.trimOnlyInclude(documentOriginal);
 	const document = wiki.join(
