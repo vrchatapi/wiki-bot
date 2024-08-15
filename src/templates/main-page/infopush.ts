@@ -1,6 +1,12 @@
 import { vrchat, wiki } from "../../api";
 
-const excludedIds = ["ips_37b26b47-c37f-4c94-8199-d520052e6ba3"];
+const supportedCommands = [
+	"OpenURL",
+	"OpenWorldsMenu",
+	"OpenSafetyMenu",
+	"OpenVRCPlusMenu"
+] as const;
+type SupportedCommand = (typeof supportedCommands)[number];
 
 export async function refresh() {
 	const [documentOriginal, infopush] = await Promise.all([
@@ -12,21 +18,27 @@ export async function refresh() {
 	]);
 
 	const data = infopush
-		.filter(
-			({ id, data }) =>
-				!excludedIds.includes(id) &&
-				data.imageUrl &&
-				(data.onPressed?.command === "OpenURL" || !data.onPressed)
-		)
-		.map(({ id, data }) => ({
-			id,
-			image: data.imageUrl,
-			url:
-				data.onPressed?.command === "OpenURL"
-					? // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
-						data.onPressed?.parameters?.[0]!
-					: undefined
-		}));
+		.filter(({ data }) => {
+			if (!data.imageUrl) return false;
+			if (!data.onPressed) return true;
+			return supportedCommands.includes(
+				data.onPressed.command as SupportedCommand
+			);
+		})
+		.map(({ id, data }) => {
+			const { command, parameters = [] } = data.onPressed!;
+
+			return {
+				id,
+				image: data.imageUrl,
+				url: {
+					OpenSafetyMenu: "https://wiki.vrchat.com/wiki/Trust_and_Safety",
+					OpenURL: parameters[0],
+					OpenVRCPlusMenu: "https://wiki.vrchat.com/wiki/VRChat+",
+					OpenWorldsMenu: `https://vrchat.com/home/worlds#${parameters[0]}`
+				}[command as SupportedCommand]
+			};
+		});
 
 	const template = wiki.trimOnlyInclude(documentOriginal);
 	const document = wiki.join(
