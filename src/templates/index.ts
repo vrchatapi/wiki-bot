@@ -5,7 +5,7 @@ import chalk from "chalk";
 
 import { filter, filterGlob } from "~/environment";
 
-const glob = new Glob("src/templates/**/*.ts");
+const glob = new Glob("src/templates/**/*.{ts,tsx}");
 
 export async function refreshTemplates() {
 	const files = await Array.fromAsync(glob.scan("."));
