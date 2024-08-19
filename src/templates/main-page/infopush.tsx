@@ -1,5 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import React from "react";
+
+import { normalizeVRChat } from "~/api/vrchat";
 
 import { vrchat, wiki } from "../../api";
 import * as richtext from "../../rich-text";
@@ -105,9 +106,9 @@ export async function refresh() {
 							if (!article) return {};
 
 							return {
-								"article-content": Buffer.from(article.content).toString(
-									"base64"
-								),
+								"article-content": Buffer.from(
+									normalizeVRChat(article.content)
+								).toString("base64"),
 								"article-id": articleId,
 								"article-image": article.image,
 								"article-title": article.title

@@ -8,6 +8,44 @@ import { cookie, cookies, log, serializeCookies } from "./middleware";
 
 import type { InfoPush, CurrentUser, Verify2FAResult } from "vrchat";
 
+export const uniqueCharacters: { [key: string]: string } = {
+	ǃ: "!",
+	"˸": ":",
+	";": ";",
+	"‘": "'",
+	"’": "'",
+	"‚": ",",
+	"․": ".",
+	"⁄": "/",
+	"∗": "*",
+	"≺": "<",
+	"≻": ">",
+	"＂": '"',
+	"＃": "#",
+	"＄": "$",
+	"％": "%",
+	"＆": "&",
+	"（": "(",
+	"）": ")",
+	"＋": "+",
+	"＝": "=",
+	"＠": "@",
+	"［": "[",
+	"＼": "\\",
+	"］": "]",
+	"＾": "^",
+	"｛": "{",
+	"｜": "|",
+	"｝": "}"
+};
+
+export function normalizeVRChat(value: string) {
+	return value
+		.split("")
+		.map((character) => uniqueCharacters[character] ?? character)
+		.join("");
+}
+
 const baseUrl = "https://vrchat.com/api/1/";
 
 const baseApi = wretch()
