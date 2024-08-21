@@ -3,6 +3,10 @@
 import { renderToStaticMarkup } from "react-dom/server";
 
 import { normalizeVRChat } from "~/api/vrchat";
+import {
+	defaultColors,
+	type DefaultColorName
+} from "~/rich-text/elements/color";
 
 import { vrchat, wiki } from "../../api";
 import * as richtext from "../../rich-text";
@@ -80,7 +84,16 @@ function getArticle({ name, article, imageUrl }: InfoPushData) {
 											</a>
 										);
 									},
-									u: ({ children }) => <u>{children()}</u>
+									u: ({ children }) => <u>{children()}</u>,
+									color: ({ value, children }) => {
+										if (typeof value !== "string") return <>{children()}</>;
+
+										let color =
+											defaultColors[value as DefaultColorName] || value;
+										if (color === "#7777fc") color = "var(--link)";
+
+										return <span style={{ color }}>{children()}</span>;
+									}
 								}}
 							/>
 						);
