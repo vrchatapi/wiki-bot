@@ -100,11 +100,19 @@ function getArticle({ name, article, imageUrl }: InfoPushData) {
 						);
 				})}
 				{links.length > 0 && (
-					<div style={{ marginTop: "2em" }}>
+					<div
+						style={{
+							display: "flex",
+							gap: ".5em",
+							flexWrap: "wrap",
+							marginTop: "2em"
+						}}
+					>
 						{links.map(({ name, url }, index) => (
 							<a
 								key={index}
 								href={url}
+								className="icon-none"
 								title={name}
 								style={{
 									display: "flex",
