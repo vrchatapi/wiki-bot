@@ -211,16 +211,6 @@ export function join(...parts: Array<string>) {
 	return parts.join("\n");
 }
 
-export function onlyInclude(content: string) {
-	return `<onlyinclude>
-${content.trim()}
-</onlyinclude>`;
-}
-
-export function trimOnlyInclude(document: string) {
-	return document.replace(/<onlyinclude>.+<\/onlyinclude>/gis, "").trim();
-}
-
 type TemplateValue = string | number;
 
 export function template(
@@ -236,4 +226,24 @@ export function template(
 					.join("")
 	}
 }}`;
+}
+
+export function translate(
+	name: string,
+	original: string,
+	nowrap: boolean = true
+) {
+	return `<translate${nowrap ? " nowrap" : ""}><!--T:${name}--> ${original}</translate>`;
+}
+
+export function replace(source: string, key: string, value: string) {
+	const regex = new RegExp(`<!--${key}:start-->(.+)<!--${key}:end-->`, "gims");
+	const match = [...source.matchAll(regex)];
+
+	let output = source;
+	for (const [a, previous] of match) {
+		output = output.replace(a, a.replace(previous, value));
+	}
+
+	return output;
 }

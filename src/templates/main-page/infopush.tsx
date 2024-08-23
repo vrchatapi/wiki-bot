@@ -202,22 +202,17 @@ export async function refresh() {
 				: {})
 		}));
 
-	const template = wiki.trimOnlyInclude(documentOriginal);
-	const document = wiki.join(
-		template,
-		wiki.onlyInclude(
-			template
-				.replace("{entries}", btoa(JSON.stringify({})))
-				.replace(
-					"{content}",
-					data
-						.map((item) => wiki.template("MainPageInfopush/Item", item))
-						.join("\n")
-				)
-		)
+	await wiki.saveTemplateContent(
+		"MainPageInfopush",
+		wiki.replace(
+			documentOriginal,
+			"items",
+			data
+				.map((item) => wiki.template("MainPageInfopush/Item", item))
+				.join("\n")
+		),
+		{
+			previous: documentOriginal
+		}
 	);
-
-	await wiki.saveTemplateContent("MainPageInfopush", document, {
-		previous: documentOriginal
-	});
 }

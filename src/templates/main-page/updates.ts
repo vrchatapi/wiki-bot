@@ -24,27 +24,24 @@ export async function refresh() {
 		.sort((a, b) => b.at.getTime() - a.at.getTime())
 		.slice(0, 6);
 
-	const template = wiki.trimOnlyInclude(documentOriginal);
-	const document = wiki.join(
-		template,
-		wiki.onlyInclude(
-			template.replace(
-				"{entries}",
-				entries
-					.map(({ id, title, url, at }) =>
-						wiki.template("MainPageUpdates/Item", {
-							date: `@${Math.floor(at.getTime() / 1000)}`,
-							id,
-							title,
-							url
-						})
-					)
-					.join("\n")
-			)
-		)
+	await wiki.saveTemplateContent(
+		"MainPageUpdates",
+		wiki.replace(
+			documentOriginal,
+			"items",
+			entries
+				.map(({ id, title, url, at }) =>
+					wiki.template("MainPageUpdates/Item", {
+						date: `@${Math.floor(at.getTime() / 1000)}`,
+						id,
+						title: wiki.translate(`Item title: ${id}`, title, true),
+						url: wiki.translate(`Item url: ${id}`, url, true)
+					})
+				)
+				.join("\n")
+		),
+		{
+			previous: documentOriginal
+		}
 	);
-
-	await wiki.saveTemplateContent("MainPageUpdates", document, {
-		previous: documentOriginal
-	});
 }
