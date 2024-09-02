@@ -79,7 +79,11 @@ function getArticle({ name, article, imageUrl }: InfoPushData) {
 										} = item;
 
 										return (
-											<a href={url} title={name}>
+											<a
+												href={url}
+												style={{ color: "var(--link)" }}
+												title={name}
+											>
 												{children()}
 											</a>
 										);
@@ -88,9 +92,9 @@ function getArticle({ name, article, imageUrl }: InfoPushData) {
 									color: ({ value, children }) => {
 										if (typeof value !== "string") return <>{children()}</>;
 
-										let color =
+										const color =
 											defaultColors[value as DefaultColorName] || value;
-										if (color === "#7777fc") color = "var(--link)";
+										if (color === "#7777fc") return <>{children()}</>;
 
 										return <span style={{ color }}>{children()}</span>;
 									}
