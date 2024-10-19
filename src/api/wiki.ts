@@ -219,17 +219,20 @@ type TemplateValue = string | number;
 
 export function template(
 	name: string,
-	parameters: Record<string, TemplateValue | undefined> | Array<TemplateValue>
+	parameters?: Record<string, TemplateValue | undefined> | Array<TemplateValue>
 ) {
 	return `{{${name}${
-		Array.isArray(parameters)
-			? parameters.map((value) => `\n|${value}`).join("")
-			: Object.entries(parameters)
-					.filter(([, value]) => value !== undefined)
-					.map(([key, value]) => `\n|${key}=${value}`)
-					.join("")
-	}
-}}`;
+		parameters
+			? `${
+					Array.isArray(parameters)
+						? parameters.map((value) => `\n|${value}`).join("")
+						: Object.entries(parameters)
+								.filter(([, value]) => value !== undefined)
+								.map(([key, value]) => `\n|${key}=${value}`)
+								.join("")
+				}\n`
+			: ""
+	}}}`;
 }
 
 export function translate(

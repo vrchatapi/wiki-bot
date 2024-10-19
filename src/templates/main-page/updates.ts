@@ -8,16 +8,25 @@ export async function refresh() {
 	]);
 
 	const entries = [
-		...updates.map(({ id, title, slug, created_at }) => ({
-			at: new Date(created_at),
-			id: `ask-${id}`,
-			title: /developer.update/i.test(title) ? "Developer Update" : title,
-			url: `https://ask.vrchat.com/t/${slug}/${id}`
-		})),
+		...updates.map(({ id: sourceId, title, slug, created_at }) => {
+			const id = `ask-${sourceId}`;
+			const type = /developer.update/i.test(title)
+				? ("developer-update" as const)
+				: ("unknown" as const);
+
+			return {
+				at: new Date(created_at),
+				id,
+				title,
+				type,
+				url: `https://ask.vrchat.com/t/${slug}/${sourceId}`
+			};
+		}),
 		...blogPosts.map(({ id, title, fullUrl, publishOn }) => ({
 			at: new Date(publishOn),
 			id: `squ-${id}`,
 			title,
+			type: "unknown" as const,
 			url: `https://hello.vrchat.com${fullUrl}`
 		}))
 	]
@@ -30,12 +39,17 @@ export async function refresh() {
 			documentOriginal,
 			"items",
 			entries
-				.map(({ id, title, url, at }) =>
+				.map(({ id, type, title, url, at }) =>
 					wiki.template("MainPageUpdates/Item", {
 						date: `@${Math.floor(at.getTime() / 1000)}`,
 						id,
-						title: wiki.translate(`Item title: ${id}`, title, true),
-						url: wiki.translate(`Item url: ${id}`, url, true)
+						title: {
+							"developer-update": wiki.template(
+								`:Translations:Template:MainPageUpdates/Item title: Developer Update/${wiki.template("PAGELANGUAGE")}`
+							),
+							unknown: wiki.translate(`Item title: ${id}`, title, true)
+						}[type],
+						url
 					})
 				)
 				.join("\n")
