@@ -2,7 +2,12 @@ import QueryStringAddon from "wretch/addons/queryString";
 import wretch from "wretch";
 import { TOTP } from "totp-generator";
 
-import { vrchatEmail, vrchatPassword, vrchatTotpSecret } from "~/environment";
+import {
+	userAgent,
+	vrchatEmail,
+	vrchatPassword,
+	vrchatTotpSecret
+} from "~/environment";
 
 import { cookie, cookies, log, serializeCookies } from "./middleware";
 
@@ -51,7 +56,10 @@ const baseUrl = "https://vrchat.com/api/1/";
 const baseApi = wretch()
 	.url(baseUrl)
 	.addon(QueryStringAddon)
-	.middlewares([cookie]);
+	.middlewares([cookie])
+	.headers({
+		"user-agent": userAgent
+	});
 
 async function verify2FA() {
 	const { verified } = await baseApi

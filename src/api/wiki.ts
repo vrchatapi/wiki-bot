@@ -8,7 +8,8 @@ import {
 	mediawikiPassword,
 	mediawikiUsername,
 	verbose,
-	force
+	force,
+	userAgent
 } from "~/environment";
 
 import { cookie, cookies, log, serializeCookies } from "./middleware";
@@ -17,6 +18,9 @@ const base = wretch("https://wiki.vrchat.com")
 	.addon(QueryStringAddon)
 	.addon(FormDataAddon)
 	.middlewares([log, cookie])
+	.headers({
+		"user-agent": userAgent
+	})
 	.query({
 		assert: "bot"
 	});
