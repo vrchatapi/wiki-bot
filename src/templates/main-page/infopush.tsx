@@ -177,7 +177,8 @@ export async function refresh() {
 			...(onPressed
 				? {
 						OpenHelpArticle: (() => {
-							const articleId = onPressed.parameters![0];
+							const articleId = onPressed.parameters?.[0];
+							if (!articleId) return {};
 
 							const item = userAll.find(({ id }) => id === articleId);
 							if (!item) return {};
@@ -197,10 +198,10 @@ export async function refresh() {
 						OpenSafetyMenu: {
 							url: "https://wiki.vrchat.com/wiki/Trust_and_Safety"
 						},
-						OpenURL: { url: onPressed!.parameters![0] },
+						OpenURL: { url: onPressed.parameters?.[0] },
 						OpenVRCPlusMenu: { url: "https://wiki.vrchat.com/wiki/VRChat+" },
 						OpenWorldsMenu: {
-							url: `https://vrchat.com/home/worlds#${onPressed!.parameters![0]}`
+							url: `https://vrchat.com/home/worlds#${onPressed.parameters?.[0]}`
 						}
 					}[onPressed.command as SupportedCommand]
 				: {})
