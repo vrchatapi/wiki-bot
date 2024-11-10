@@ -51,7 +51,7 @@ export function normalizeVRChat(value: string) {
 		.join("");
 }
 
-const baseUrl = "https://vrchat.com/api/1/";
+const baseUrl = "https://api.vrchat.cloud/api/1/";
 
 const baseApi = wretch()
 	.url(baseUrl)
