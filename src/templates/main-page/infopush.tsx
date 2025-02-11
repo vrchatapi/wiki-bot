@@ -108,6 +108,7 @@ function getArticle({ name, article, imageUrl }: InfoPushData) {
 							<video
 								src={value.videoUrl}
 								key={index}
+								controls
 								style={{
 									borderRadius: "8px",
 									margin: "1em 0",
