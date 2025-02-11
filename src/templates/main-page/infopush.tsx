@@ -103,6 +103,19 @@ function getArticle({ name, article, imageUrl }: InfoPushData) {
 						);
 					}
 
+					if ("videoUrl" in value)
+						return (
+							<video
+								src={value.videoUrl}
+								key={index}
+								style={{
+									borderRadius: "8px",
+									margin: "1em 0",
+									width: "100%"
+								}}
+							/>
+						);
+
 					if ("imageUrl" in value)
 						return (
 							<img
