@@ -14,7 +14,7 @@ const base = wretch("https://ask.vrchat.com")
 
 export async function getUpdates() {
 	const {
-		topic_list: { topics }
+		topic_list: { topics: officialTopics }
 	} = await base
 		.url("/c/official.json")
 		.get()
@@ -22,5 +22,17 @@ export async function getUpdates() {
 			operations["listCategoryTopics"]["responses"]["200"]["content"]["application/json"]
 		>();
 
-	return topics;
+	const {
+		topic_list: { topics: announcementTopics }
+	} = await base
+		.url("/c/71.json")
+		.get()
+		.json<
+			operations["listCategoryTopics"]["responses"]["200"]["content"]["application/json"]
+		>();
+
+	return [...officialTopics, ...announcementTopics].sort(
+		(a, b) =>
+			new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+	);
 }
