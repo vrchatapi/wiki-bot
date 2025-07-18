@@ -45,6 +45,7 @@ jobs:
             --vrchat-totp-secret="${{ secrets.VRCHAT_TOTP_SECRET }}" \
             --mediawiki-username="${{ secrets.MEDIAWIKI_USERNAME }}" \
             --mediawiki-password="${{ secrets.MEDIAWIKI_PASSWORD }}" \
+            --bypass-token="${{ secrets.BYPASS_TOKEN }}" \
 
           export COOKIES=$(cat cookies.json)
           echo "::add-mask::$COOKIES"
