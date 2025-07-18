@@ -9,7 +9,8 @@ import {
 	mediawikiUsername,
 	verbose,
 	force,
-	userAgent
+	userAgent,
+	cfToken
 } from "~/environment";
 
 import { cookie, cookies, log, serializeCookies } from "./middleware";
@@ -19,7 +20,8 @@ const base = wretch("https://wiki.vrchat.com")
 	.addon(FormDataAddon)
 	.middlewares([log, cookie])
 	.headers({
-		"user-agent": userAgent
+		"user-agent": userAgent,
+		"x-vrc-waf-pls-let-me-in": cfToken
 	})
 	.query({
 		assert: "bot"
@@ -221,18 +223,16 @@ export function template(
 	name: string,
 	parameters?: Record<string, TemplateValue | undefined> | Array<TemplateValue>
 ) {
-	return `{{${name}${
-		parameters
-			? `${
-					Array.isArray(parameters)
-						? parameters.map((value) => `\n|${value}`).join("")
-						: Object.entries(parameters)
-								.filter(([, value]) => value !== undefined)
-								.map(([key, value]) => `\n|${key}=${value}`)
-								.join("")
-				}\n`
+	return `{{${name}${parameters
+			? `${Array.isArray(parameters)
+				? parameters.map((value) => `\n|${value}`).join("")
+				: Object.entries(parameters)
+					.filter(([, value]) => value !== undefined)
+					.map(([key, value]) => `\n|${key}=${value}`)
+					.join("")
+			}\n`
 			: ""
-	}}}`;
+		}}}`;
 }
 
 export function translate(
