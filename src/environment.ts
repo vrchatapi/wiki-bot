@@ -20,7 +20,7 @@ export const {
 		"vrchat-totp-secret": vrchatTotpSecret = env("VRCHAT_TOTP_SECRET"),
 		"mediawiki-username": mediawikiUsername = env("MEDIAWIKI_USERNAME"),
 		"mediawiki-password": mediawikiPassword = env("MEDIAWIKI_PASSWORD"),
-		"cf-token": cfToken = env("CF_TOKEN"),
+		"bypass-token": bypassToken = env("BYPASS_TOKEN"),
 		"user-agent": userAgent = env(
 			"USER_AGENT",
 			`wiki.vrchat.com bot/${version} https://github.com/vrchatapi/wiki-bot/issues/new`
@@ -29,7 +29,7 @@ export const {
 } = parseArgs({
 	args: Bun.argv.slice(2),
 	options: {
-		"cf-token": {
+		"bypass-token": {
 			type: "string"
 		},
 		dry: {

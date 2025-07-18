@@ -10,7 +10,7 @@ import {
 	verbose,
 	force,
 	userAgent,
-	cfToken
+	bypassToken
 } from "~/environment";
 
 import { cookie, cookies, log, serializeCookies } from "./middleware";
@@ -21,7 +21,7 @@ const base = wretch("https://wiki.vrchat.com")
 	.middlewares([log, cookie])
 	.headers({
 		"user-agent": userAgent,
-		"x-vrc-waf-pls-let-me-in": cfToken
+		"x-vrc-waf-pls-let-me-in": bypassToken
 	})
 	.query({
 		assert: "bot"
@@ -224,14 +224,14 @@ export function template(
 	parameters?: Record<string, TemplateValue | undefined> | Array<TemplateValue>
 ) {
 	return `{{${name}${parameters
-			? `${Array.isArray(parameters)
-				? parameters.map((value) => `\n|${value}`).join("")
-				: Object.entries(parameters)
-					.filter(([, value]) => value !== undefined)
-					.map(([key, value]) => `\n|${key}=${value}`)
-					.join("")
-			}\n`
-			: ""
+		? `${Array.isArray(parameters)
+			? parameters.map((value) => `\n|${value}`).join("")
+			: Object.entries(parameters)
+				.filter(([, value]) => value !== undefined)
+				.map(([key, value]) => `\n|${key}=${value}`)
+				.join("")
+		}\n`
+		: ""
 		}}}`;
 }
 
