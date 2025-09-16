@@ -13,6 +13,7 @@ export const {
 	values: {
 		dry = false,
 		verbose = false,
+		"verbose-length": verboseLengthString,
 		force = false,
 		filter = "**",
 		"vrchat-email": vrchatEmail = env("VRCHAT_EMAIL"),
@@ -56,6 +57,9 @@ export const {
 			short: "v",
 			type: "boolean"
 		},
+		"verbose-length": {
+			type: "string"
+		},
 		"vrchat-email": {
 			type: "string"
 		},
@@ -69,4 +73,6 @@ export const {
 	strict: true
 });
 
+export const verboseLength =
+	(verboseLengthString && Number.parseInt(verboseLengthString, 10)) || 512;
 export const filterGlob = new Bun.Glob(filter);

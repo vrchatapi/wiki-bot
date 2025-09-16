@@ -1,6 +1,7 @@
 import chalk from "chalk";
+import prettyBytes from "pretty-bytes";
 
-import { verbose } from "~/environment";
+import { verbose, verboseLength } from "~/environment";
 
 import type { ConfiguredMiddleware, WretchOptions } from "wretch";
 
@@ -29,12 +30,17 @@ export const log: ConfiguredMiddleware = (next) => {
 		const response = await next(url, options);
 		const clone = response.clone();
 
+		let responseContent = await clone.text();
+		if (responseContent.length > verboseLength) {
+			responseContent = `${responseContent.slice(0, verboseLength)}... (${prettyBytes(responseContent.length)})`;
+		}
+
 		console.log(
 			options["method"],
 			clone.url.replace(origin, chalk.dim(origin)),
 			clone.status,
 			clone.statusText,
-			verbose ? chalk.dim(`\n${await clone.text()}`) : ""
+			verbose ? chalk.dim(`\n${responseContent}`) : ""
 		);
 
 		return response;
