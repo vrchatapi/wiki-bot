@@ -35,12 +35,23 @@ export const log: ConfiguredMiddleware = (next) => {
 			responseContent = `${responseContent.slice(0, verboseLength)}... (${prettyBytes(responseContent.length)})`;
 		}
 
+		const ray = clone.headers.get("cf-ray");
+		const requestId = clone.headers.get("x-vrc-request-id");
+		const xRequestId = clone.headers.get("x-request-id");
+
+		const requestDetails = [
+			ray && `cf-ray: ${chalk.cyan(ray)}`,
+			requestId && `x-vrc-request-id: ${chalk.cyan(requestId)}`,
+			xRequestId && `x-request-id: ${chalk.cyan(xRequestId)}`
+		].filter(Boolean);
+
 		console.log(
 			options["method"],
 			clone.url.replace(origin, chalk.dim(origin)),
 			clone.status,
 			clone.statusText,
-			verbose ? chalk.dim(`\n${responseContent}`) : ""
+			requestDetails.length ? chalk.dim(`(${requestDetails.join(", ")})`) : "",
+			verbose || !clone.ok ? chalk.dim(`\n${responseContent}\n`) : ""
 		);
 
 		return response;
