@@ -62,11 +62,13 @@ const baseApi = wretch()
 	});
 
 async function verify2FA() {
+	const { otp: code } = await TOTP.generate(vrchatTotpSecret);
+
 	const { verified } = await baseApi
 		.middlewares([log])
 		.url("auth/twofactorauth/totp/verify")
 		.json({
-			code: TOTP.generate(vrchatTotpSecret).otp
+			code
 		})
 		.post()
 		.json<Verify2FAResult>()
