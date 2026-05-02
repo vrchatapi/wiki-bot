@@ -18,6 +18,8 @@ const supportedCommands = [
 	"OpenWorldsMenu",
 	"OpenSafetyMenu",
 	"OpenVRCPlusMenu",
+	"OpenVRChatStore",
+	"OpenAvatarsMenu",
 	"OpenHelpArticle"
 ] as const;
 type SupportedCommand = (typeof supportedCommands)[number];
@@ -210,10 +212,12 @@ export async function refresh() {
 							};
 						})(),
 						OpenSafetyMenu: {
-							url: "https://wiki.vrchat.com/wiki/Trust_and_Safety"
+							url: "https://wiki.vrchat.com/wiki/Special:MyLanguage/Trust_and_Safety"
 						},
 						OpenURL: { url: onPressed.parameters?.[0] },
-						OpenVRCPlusMenu: { url: "https://wiki.vrchat.com/wiki/VRChat+" },
+						OpenVRCPlusMenu: { url: "https://wiki.vrchat.com/wiki/Special:MyLanguage/VRC+" }, 
+						OpenVRChatStore: { url: "https://wiki.vrchat.com/wiki/Special:MyLanguage/Shop" },
+						OpenAvatarsMenu: { url: "https://wiki.vrchat.com/wiki/Special:MyLanguage/Avatars" }, 
 						OpenWorldsMenu: {
 							url: `https://vrchat.com/home/worlds#${onPressed.parameters?.[0]}`
 						}
