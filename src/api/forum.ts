@@ -4,10 +4,22 @@ import { userAgent } from "~/environment";
 
 import { cookie, log } from "./middleware";
 
+import type { ConfiguredMiddleware } from "wretch";
 import type { operations } from "discourse2/lib/schema";
 
+const retry: ConfiguredMiddleware = (next) => async (url, options) => {
+	const response = await next(url, options);
+	if (response.status === 429) {
+		const retryAfterValue = parseInt(response.headers.get("retry-after") ?? "", 10);
+		const retryAfter = Number.isNaN(retryAfterValue) ? 10 : retryAfterValue;
+		await new Promise((resolve) => setTimeout(resolve, retryAfter * 1000));
+		return next(url, options);
+	}
+	return response;
+};
+
 const base = wretch("https://ask.vrchat.com")
-	.middlewares([log, cookie])
+	.middlewares([log, retry, cookie])
 	.headers({
 		"user-agent": userAgent
 	});
