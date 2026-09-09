@@ -1,7 +1,6 @@
 /* eslint-disable sort-keys/sort-keys-fix */
 
 import { test, expect } from "bun:test";
-import React from "react";
 
 import { toHTML } from "./html";
 import { defaultElements, type RenderOptions } from "./elements";
