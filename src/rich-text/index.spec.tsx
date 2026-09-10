@@ -1,7 +1,6 @@
 /* eslint-disable sort-keys/sort-keys-fix */
 
 import { test, expect } from "bun:test";
-import React from "react";
 
 import { toHTML } from "./html";
 import { defaultElements, type RenderOptions } from "./elements";
@@ -46,6 +45,22 @@ test("toSyntaxTree", () => {
 			": Trans Academy"
 		]
 	});
+
+	expect(toSyntaxTree("<indent=15%><b>Indented</b></indent>")).toMatchObject({
+		type: "root",
+		children: [
+			{
+				type: "indent",
+				value: "15%",
+				children: [
+					{
+						type: "b",
+						children: ["Indented"]
+					}
+				]
+			}
+		]
+	});
 });
 
 test("toHTML", () => {
@@ -58,6 +73,10 @@ test("toHTML", () => {
 	).toBe("<strong>Community Spotlight</strong>: Trans Academy");
 
 	expect(toHTML("hello<br>world", renderOptions)).toBe("hello<br/>world");
+
+	expect(
+		toHTML("<indent=15%><b>Indented</b></indent>", renderOptions)
+	).toBe("<strong>Indented</strong>");
 
 	expect(
 		toHTML(

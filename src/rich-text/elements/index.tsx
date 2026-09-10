@@ -35,6 +35,7 @@ export const defaultElements: ElementMap = {
 	bold: BoldElement,
 	br: BreakElement,
 	color: ColorElement,
+	indent: RootElement,
 	root: RootElement,
 	size: SizeElement,
 	text: TextElement
